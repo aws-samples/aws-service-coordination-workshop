@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  Service Coordination with AWS Step Functions
+  Template to setup the AWS Cloud9 environment for the workshop.
+
+Parameters:
+  Cloud9CidrBlock:
+    Description: The CIDR block range for your Cloud9 IDE VPC
+    Type: String
+    Default: 10.73.0.0/28
+  GitRepositoryURL:
+    Description: The Git repository URL for the project we are cloning
+    Type: String
+    Default: https://github.com/aws-samples/aws-service-coordination-workshop.git
+  EnvType:
+    Description: Whether or not this template is running on an EE or user account environment.
+    Default: ee
+    Type: String
+    AllowedValues:
+      - ee
+      - user
+
+Conditions:
+  ApplyEEChanges: !Equals
+      - !Ref EnvType
+      - ee
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref Cloud9CidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-VPC"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-InternetGateway"
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref 'VPC'
+      InternetGatewayId: !Ref 'InternetGateway'
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-RouteTable"
+
+  Route:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref 'RouteTable'
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'InternetGateway'
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref 'VPC'
+      CidrBlock: !Ref Cloud9CidrBlock
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PublicSubnet1"
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref RouteTable
+
+  Cloud9:
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      AutomaticStopTimeMinutes: 30
+      Description: Coordinating Services with Step Functions Workspace
+      InstanceType: t3.small
+      ImageId: amazonlinux-2-x86_64
+      Name: !Sub "sf-workshop-${AWS::StackName}"
+      Repositories:
+        - PathComponent: /service-coordination-step-functions
+          RepositoryUrl: !Ref GitRepositoryURL
+      SubnetId: !Ref PublicSubnet1
+      OwnerArn:
+        !If
+        - ApplyEEChanges
+        - 
+          !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/TeamRole/MasterKey"
+        - !Ref "AWS::NoValue"
+
+Outputs:
+  Cloud9DevEnvUrl:
+    Description: Cloud9 Development Environment
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloud9/ide/${Cloud9}"

@@ -1,0 +1,12 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# SAM directories & files
+.aws-sam/
+samconfig.toml
+
+.vscode

@@ -1,11 +1,6 @@
-## My Project
+## Introduction to Service Coordination with Step Functions Workshop
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+Code repository for the AWS Service Coordination With Step Functions Workshop.
 
 ## Security
 
