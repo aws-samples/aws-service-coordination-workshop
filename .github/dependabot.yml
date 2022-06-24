@@ -2,6 +2,6 @@ version: 2
 updates:
   # Maintain dependencies for npm
   - package-ecosystem: "npm" 
-    directory: "sam_template/functions/account-applications/package.json" 
+    directory: "sam_template/functions/account-applications/" 
     schedule:
       interval: "weekly"
