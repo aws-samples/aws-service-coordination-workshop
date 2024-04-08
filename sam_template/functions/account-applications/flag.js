@@ -8,7 +8,7 @@ const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, docClient);
 
 const flagForReview = async (data) => {
-    const { id, flagType, taskToken, checks } = data;
+    const { id, flagType, checks } = data;
 
     if (flagType !== 'REVIEW' && flagType !== 'UNPROCESSABLE_DATA') {
         throw new Error("flagType must be REVIEW or UNPROCESSABLE_DATA")
@@ -32,10 +32,6 @@ const flagForReview = async (data) => {
         attrs.state = 'FLAGGED_WITH_UNPROCESSABLE_DATA';
         attrs.reason = JSON.parse(data.errorInfo.Cause).errorMessage;        
     }
-
-    if (taskToken) {
-        attrs.taskToken = taskToken;
-    }   
 
     const updatedApplication = await AccountApplications.update(
         id,

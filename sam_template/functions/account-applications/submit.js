@@ -1,4 +1,5 @@
 'use strict';
+const REGION = process.env.REGION;
 const APPLICATIONS_TABLE_NAME = process.env.APPLICATIONS_TABLE_NAME;
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');

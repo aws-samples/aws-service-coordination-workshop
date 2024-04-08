@@ -8,7 +8,7 @@ const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, docClient);
 
 const flagForReview = async (data) => {
-    const { id, flagType, taskToken, checks } = data;
+    const { id, flagType, checks, taskToken } = data;
 
     if (flagType !== 'REVIEW' && flagType !== 'UNPROCESSABLE_DATA') {
         throw new Error("flagType must be REVIEW or UNPROCESSABLE_DATA")
