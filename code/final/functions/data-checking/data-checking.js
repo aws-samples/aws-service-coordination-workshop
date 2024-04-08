@@ -1,33 +1,33 @@
 'use strict';
 
 const checkName = (data) => {
-    const { name } = data
+    const { name } = data;
 
     if (name.includes("UNPROCESSABLE_DATA")) {
-        const simulatedError = new Error(`Simulated error: Name '${name}' is not possible to check.`)
-        simulatedError.name = 'UnprocessableDataException'
-        throw simulatedError
+        const simulatedError = new Error(`Simulated error: Name '${name}' is not possible to check.`);
+        simulatedError.name = 'UnprocessableDataException';
+        throw simulatedError;
     }
 
-    const flagged = name.includes('evil')
+    const flagged = name.includes('evil');
     if (flagged) {
-        const reason = "Invalid Name - contains the word evil!"
+        const reason = "Invalid Name - contains the word evil!";
         return { flagged, reason }
     }
     return { flagged }
 }
 
 const checkAddress = (data) => {
-    const { address } = data
+    const { address } = data;
 
-    const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null)
+    const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null);
     
     if (flagged) {
-        const reason = "Invalid Address - does not match number(s)-space-letter(s) pattern"
-        return { flagged, reason }
+        const reason = "Invalid Address - does not match number(s)-space-letter(s) pattern";
+        return { flagged, reason };
     }
     
-    return { flagged }
+    return { flagged };
 }
 
 
@@ -38,13 +38,13 @@ const commandHandlers = {
 
 module.exports.handler = (event, context, callback) => {
     try {
-        const { command, data } = event
+        const { command, data } = event;
 
-        const result = commandHandlers[command](data)
-        callback(null, result)
+        const result = commandHandlers[command](data);
+        callback(null, result);
     } catch (ex) {
-        console.error(ex)
-        console.info('event', JSON.stringify(event))
-        callback(ex)
+        console.error(ex);
+        console.info('event', JSON.stringify(event));
+        callback(ex);
     }
 };
