@@ -10,6 +10,10 @@ const checkName = (data) => {
     }
 
     const flagged = name.includes('evil')
+    if (flagged) {
+        const reason = "Invalid Name - contains the word evil!"
+        return { flagged, reason }
+    }
     return { flagged }
 }
 
@@ -17,6 +21,12 @@ const checkAddress = (data) => {
     const { address } = data
 
     const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null)
+    
+    if (flagged) {
+        const reason = "Invalid Address - does not contain a number and a word"
+        return { flagged, reason }
+    }
+    
     return { flagged }
 }
 

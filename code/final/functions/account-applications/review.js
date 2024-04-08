@@ -2,13 +2,16 @@
 const REGION = process.env.REGION
 const APPLICATIONS_TABLE_NAME = process.env.APPLICATIONS_TABLE_NAME
 
-const AWS = require('aws-sdk')
-AWS.config.update({region: REGION});
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
+const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-const dynamo = new AWS.DynamoDB.DocumentClient();
-const stepfunctions = new AWS.StepFunctions();
+const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, docClient)
 
-const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, dynamo)
+const { SFN, SendTaskSuccessCommand } = require('@aws-sdk/client-sfn');
+const stepfunctions = new SFN({
+    region: REGION
+});
 
 const updateApplicationWithDecision = (id, decision) => {
     if (decision !== 'APPROVE' && decision !== 'REJECT') {
@@ -26,11 +29,11 @@ const updateWorkflowWithReviewDecision = async (data) => {
 
     const updatedApplication = await updateApplicationWithDecision(id, decision)
 
-    let params = {
+    const command = new SendTaskSuccessCommand({
         output: JSON.stringify({ decision }),
         taskToken: updatedApplication.taskToken
-    };
-    await stepfunctions.sendTaskSuccess(params).promise()
+    });
+    await stepfunctions.send(command);
 
     return updatedApplication
 }

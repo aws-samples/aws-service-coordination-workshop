@@ -3,13 +3,17 @@
 const checkName = (data) => {
     const { name } = data
 
-    if (name.toLowerCase().includes("unprocessable_data")) {
+    if (name.includes("UNPROCESSABLE_DATA")) {
         const simulatedError = new Error(`Simulated error: Name '${name}' is not possible to check.`)
         simulatedError.name = 'UnprocessableDataException'
         throw simulatedError
     }
 
-    const flagged = name.toLowerCase().includes('evil')
+    const flagged = name.includes('evil')
+    if (flagged) {
+        const reason = "Invalid Name - contains the word evil!"
+        return { flagged, reason }
+    }
     return { flagged }
 }
 
@@ -17,6 +21,12 @@ const checkAddress = (data) => {
     const { address } = data
 
     const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null)
+    
+    if (flagged) {
+        const reason = "Invalid Address - does not contain a number and a word"
+        return { flagged, reason }
+    }
+    
     return { flagged }
 }
 

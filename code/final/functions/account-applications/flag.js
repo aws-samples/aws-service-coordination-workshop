@@ -1,50 +1,56 @@
 'use strict';
-const REGION = process.env.REGION
-const APPLICATIONS_TABLE_NAME = process.env.APPLICATIONS_TABLE_NAME
+const APPLICATIONS_TABLE_NAME = process.env.APPLICATIONS_TABLE_NAME;
 
-const AWS = require('aws-sdk')
-AWS.config.update({region: REGION});
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
+const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-const dynamo = new AWS.DynamoDB.DocumentClient();
-
-const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, dynamo)
+const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, docClient);
 
 const flagForReview = async (data) => {
-    const { id, flagType, taskToken } = data
+    const { id, flagType, taskToken, checks } = data;
 
     if (flagType !== 'REVIEW' && flagType !== 'UNPROCESSABLE_DATA') {
         throw new Error("flagType must be REVIEW or UNPROCESSABLE_DATA")
-    }
+    };
 
-    let newState
-    let reason
+    let attrs = {};
     if (flagType === 'REVIEW') {
-        newState = 'FLAGGED_FOR_REVIEW'
-        reason = data.reason
+        attrs.state = 'FLAGGED_FOR_REVIEW';
+        if (checks) {
+            let reasons = [];
+            checks.forEach(check => {
+                if (check.reason){
+                    reasons.push(check.reason);
+                }
+            });
+            const reason = reasons.join(', ');
+            attrs.reason = reason;
+        }
     }
     else {
-        reason = JSON.parse(data.errorInfo.Cause).errorMessage
-        newState = 'FLAGGED_WITH_UNPROCESSABLE_DATA'
+        attrs.state = 'FLAGGED_WITH_UNPROCESSABLE_DATA';
+        attrs.reason = JSON.parse(data.errorInfo.Cause).errorMessage;        
     }
+
+    if (taskToken) {
+        attrs.taskToken = taskToken;
+    }   
 
     const updatedApplication = await AccountApplications.update(
         id,
-        {
-            state: newState,
-            reason,
-            taskToken
-        }
-    )
-    return updatedApplication
+        attrs
+    );
+    return updatedApplication;
 }
 
 module.exports.handler = async(event) => {
     try {
-        const result = await flagForReview(event)
-        return result
+        const result = await flagForReview(event);
+        return result;
     } catch (ex) {
-        console.error(ex)
-        console.info('event', JSON.stringify(event))
-        throw ex
+        console.error(ex);
+        console.info('event', JSON.stringify(event));
+        throw ex;
     }
 };

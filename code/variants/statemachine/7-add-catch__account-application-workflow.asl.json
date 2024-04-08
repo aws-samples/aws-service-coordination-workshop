@@ -78,7 +78,8 @@
                 "Payload": {
                     "id.$": "$.application.id",
                     "flagType": "REVIEW",
-                    "taskToken.$": "$$.Task.Token"
+                    "taskToken.$": "$$.Task.Token",
+                    "checks.$": "$.checks"
                 }
             },
             "ResultPath": "$.review",
