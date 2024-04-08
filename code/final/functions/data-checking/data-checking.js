@@ -23,7 +23,7 @@ const checkAddress = (data) => {
     const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null)
     
     if (flagged) {
-        const reason = "Invalid Address - does not contain a number and a word"
+        const reason = "Invalid Address - does not match number(s)-space-letter(s) pattern"
         return { flagged, reason }
     }
     
