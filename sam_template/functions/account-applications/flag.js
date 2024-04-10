@@ -18,8 +18,10 @@ const flagForReview = async (data) => {
     if (flagType === 'REVIEW') {
         attrs.state = 'FLAGGED_FOR_REVIEW';
         if (checks) {
-            let reasons = [];
-            checks.forEach(check => {
+            let reasons = [];            
+            let keys = Object.keys(checks);
+            keys.forEach(key => {
+                let check = checks[key];                        
                 if (check.reason){
                     reasons.push(check.reason);
                 }
