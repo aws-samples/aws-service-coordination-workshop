@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const { GetCommand, PutCommand, UpdateCommand, QueryCommand, DeleteCommand} = require('@aws-sdk/lib-dynamodb');
+const { ConditionalCheckFailedException } = require('@aws-sdk/client-dynamodb');
 
 class AccountApplications {
     constructor(tableName, docClient) {
@@ -50,13 +51,22 @@ class AccountApplications {
             UpdateExpression: updateExpression,
             ExpressionAttributeNames: expressionAttributeNames,  
             ExpressionAttributeValues: expressionAttributeValues,
+            ConditionExpression: 'attribute_exists(id)',
             ReturnValues: "ALL_NEW"
         });
 
-        const response = await this.dynamo.send(command);
-        const {Attributes} = response;
-        const updatedApplication = Attributes;
-        return updatedApplication;
+        try {
+            const response = await this.dynamo.send(command);
+            const {Attributes} = response;
+            const updatedApplication = Attributes;
+            return updatedApplication;
+        } catch (e) {
+            if (e instanceof ConditionalCheckFailedException) {
+                throw new Error("Existing Application does not exist with id:", id);
+            } else {
+                throw e;
+            }
+        }
     }
 
     async findAllByState(data) {
