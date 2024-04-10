@@ -62,7 +62,7 @@ class AccountApplications {
             return updatedApplication;
         } catch (e) {
             if (e instanceof ConditionalCheckFailedException) {
-                throw new Error("Existing Application does not exist with id:", id);
+                throw new Error("Existing Application does not exist with id: " + id);
             } else {
                 throw e;
             }
