@@ -1,20 +1,18 @@
-'use strict';
-const REGION = process.env.REGION
-const APPLICATIONS_TABLE_NAME = process.env.APPLICATIONS_TABLE_NAME
+'use strict';;
+const APPLICATIONS_TABLE_NAME = process.env.APPLICATIONS_TABLE_NAME;
 
-const AWS = require('aws-sdk')
-AWS.config.update({region: REGION});
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
+const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-const dynamo = new AWS.DynamoDB.DocumentClient();
-
-const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, dynamo)
+const AccountApplications = require('./AccountApplications')(APPLICATIONS_TABLE_NAME, docClient);
 
 module.exports.handler = async(event) => {
     try {
-        const result = await AccountApplications.findAllByState(event)
-        return result
+        const result = await AccountApplications.findAllByState(event);
+        return result;
     } catch (ex) {
-        console.error(ex)
-        console.info('event', JSON.stringify(event))
+        console.error(ex);
+        console.info('event', JSON.stringify(event));
     }
 };

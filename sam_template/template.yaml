@@ -4,7 +4,7 @@ Description: Template for step-functions-workshop
 
 Globals:
   Function:
-    Runtime: nodejs16.x
+    Runtime: nodejs20.x
 
 Resources:
   ApproveApplicationFunction:

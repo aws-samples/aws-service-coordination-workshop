@@ -3,21 +3,31 @@
 const checkName = (data) => {
     const { name } = data
 
-    if (name.toLowerCase().includes("unprocessable_data")) {
-        const simulatedError = new Error(`Simulated error: Name '${name}' is not possible to check.`)
-        simulatedError.name = 'UnprocessableDataException'
-        throw simulatedError
+    if (name.includes("UNPROCESSABLE_DATA")) {
+        const simulatedError = new Error(`Simulated error: Name '${name}' is not possible to check.`);
+        simulatedError.name = 'UnprocessableDataException';
+        throw simulatedError;
     }
 
-    const flagged = name.toLowerCase().includes('evil')
-    return { flagged }
+    const flagged = name.includes('evil')
+    if (flagged) {
+        const reason = "Invalid Name - contains the word evil!";
+        return { flagged, reason };
+    }
+    return { flagged };
 }
 
 const checkAddress = (data) => {
-    const { address } = data
+    const { address } = data;
 
-    const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null)
-    return { flagged }
+    const flagged = (address.match(/(\d+ \w+)|(\w+ \d+)/g) === null);
+    
+    if (flagged) {
+        const reason = "Invalid Address - does not match number(s)-space-letter(s) pattern";
+        return { flagged, reason };
+    }
+    
+    return { flagged };
 }
 
 
@@ -28,13 +38,13 @@ const commandHandlers = {
 
 module.exports.handler = (event, context, callback) => {
     try {
-        const { command, data } = event
+        const { command, data } = event;
 
-        const result = commandHandlers[command](data)
-        callback(null, result)
+        const result = commandHandlers[command](data);
+        callback(null, result);
     } catch (ex) {
-        console.error(ex)
-        console.info('event', JSON.stringify(event))
-        callback(ex)
+        console.error(ex);
+        console.info('event', JSON.stringify(event));
+        callback(ex);
     }
 };
