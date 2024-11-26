@@ -58,9 +58,8 @@ function upgrade_existing_packages() {
 cli_binary_format = raw-in-base64-out
 EOT
 
-    _logger "[+] Updating NPM"
-    # unable to update to latest currently until node 18 is supported
-    npm install -g npm@9.8.1
+    _logger "[+] Updating NPM"    
+    sudo npm install -g npm
 }
 
 function install_utility_tools() {
