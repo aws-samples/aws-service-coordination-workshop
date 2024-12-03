@@ -4,6 +4,6 @@
   "description": "A set of Lambda functions that operate on Account Applications",
   "license": "MIT",
   "dependencies": {
-    "uuid": "^10.0.0"
+    "uuid": "^11.0.3"
   }
 }
